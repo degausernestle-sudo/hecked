@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retro Hacker Screen</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#050505;
+    color:#00ff66;
+    font-family:Consolas, Courier New, monospace;
+    overflow:hidden;
+}
+
+/* Matrix Canvas */
+#matrix{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-2;
+}
+
+/* Scanlines */
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+        transparent 0px,
+        rgba(255,255,255,.03) 2px,
+        transparent 4px
+    );
+    z-index:-1;
+}
+
+.container{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.card{
+    width:min(900px,100%);
+    border:2px solid #00ff66;
+    background:rgba(0,0,0,.75);
+    padding:35px;
+    text-align:center;
+    box-shadow:0 0 30px #00ff66;
+    animation:flicker .18s infinite alternate;
+}
+
+h1{
+    color:#00ff66;
+    font-size:clamp(2rem,6vw,4.8rem);
+    text-shadow:0 0 15px #00ff66;
+    margin-bottom:15px;
+}
+
+.warning{
+    color:#ff3b3b;
+    font-size:clamp(1.3rem,4vw,2.2rem);
+    margin-bottom:25px;
+    text-shadow:0 0 12px red;
+}
+
+.line{
+    text-align:left;
+    margin:12px 0;
+    font-size:clamp(.9rem,2vw,1.2rem);
+}
+
+.progress{
+    width:100%;
+    height:16px;
+    border:1px solid #00ff66;
+    margin:20px 0;
+}
+
+.bar{
+    width:0%;
+    height:100%;
+    background:#00ff66;
+    box-shadow:0 0 15px #00ff66;
+    transition:.2s;
+}
+
+.footer{
+    margin-top:30px;
+    color:#00bb55;
+    font-size:clamp(.8rem,2vw,1rem);
+}
+
+.cursor{
+    animation:blink .8s infinite;
+}
+
+@keyframes blink{
+    50%{opacity:0;}
+}
+
+@keyframes flicker{
+    from{opacity:.95;}
+    to{opacity:1;}
+}
+
+@media(max-width:600px){
+
+.card{
+    padding:22px;
+}
+
+.line{
+    font-size:.9rem;
+}
+
+.warning{
+    margin-bottom:18px;
+}
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="container">
+
+<div class="card">
+
+<h1>ACCESS DENIED</h1>
+
+<div class="warning">
+⚠ YOU HAVE BEEN HACKED ⚠
+</div>
+
+<div class="line">> Initializing terminal...</div>
+<div class="line">> Accessing secure database...</div>
+<div class="line">> Downloading confidential files...</div>
+<div class="line">> Encrypting storage...</div>
+
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="line">
+> Progress:
+<span id="percent">0%</span>
+</div>
+
+<br>
+
+<div class="line">
+> SYSTEM FAILURE<span class="cursor">█</span>
+</div>
+
+<div class="footer">
+Retro Hacker Interface v2.0<br>
+ERROR CODE: 0xDEADBEEF
+</div>
+
+</div>
+
+</div>
+
+<script>
+// Progress Animation
+let p=0;
+const bar=document.getElementById("bar");
+const txt=document.getElementById("percent");
+
+const timer=setInterval(()=>{
+    p+=Math.random()*3;
+
+    if(p>=100){
+        p=100;
+        clearInterval(timer);
+    }
+
+    bar.style.width=p+"%";
+    txt.innerHTML=Math.floor(p)+"%";
+
+},100);
+
+
+// Matrix Effect
+const canvas=document.getElementById("matrix");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+}
+resize();
+
+const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&";
+const size=16;
+let cols=Math.floor(canvas.width/size);
+let drops=[];
+
+function resetDrops(){
+    cols=Math.floor(canvas.width/size);
+    drops=[];
+    for(let i=0;i<cols;i++) drops[i]=1;
+}
+resetDrops();
+
+function draw(){
+
+    ctx.fillStyle="rgba(0,0,0,.06)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="#00ff66";
+    ctx.font=size+"px monospace";
+
+    for(let i=0;i<drops.length;i++){
+
+        const text=letters[Math.floor(Math.random()*letters.length)];
+
+        ctx.fillText(text,i*size,drops[i]*size);
+
+        if(drops[i]*size>canvas.height && Math.random()>.975)
+            drops[i]=0;
+
+        drops[i]++;
+    }
+}
+
+setInterval(draw,35);
+
+window.addEventListener("resize",()=>{
+    resize();
+    resetDrops();
+});
+</script>
+
+</body>
+</html>
